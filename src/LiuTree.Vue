@@ -782,9 +782,6 @@ export default {
     this.eventBus.$off("executeTree");
   },
   mounted: function() {
-    this.$message({
-      message: "不需要移动"
-    });
   },
   methods: {
     treestring: function() {
@@ -835,14 +832,12 @@ export default {
         })
         .catch(function(error) {
           //self.$loading().close();
-          alert(error);
-          //self.$message.error(error);
-          //if (error.response) {
-          //    self.$message.error('服务器错误');
-          //} else {
-          //    //一些错误是在设置请求的时候触发
-          //    self.$message.error(error.message);
-          //}
+          if (error.response) {
+            self.$message.error("服务器错误");
+          } else {
+            //一些错误是在设置请求的时候触发
+            self.$message.error(error.message);
+          }
         });
     },
     removeMe: function(tree, Id) {
@@ -861,8 +856,14 @@ export default {
                 this.executeTree();
               }
             })
-            .catch(t => {
-              alert(t);
+            .catch(error => {
+              _newItem.isLoading = false;
+              if (error.response) {
+                self.$message.error("服务器错误");
+              } else {
+                //一些错误是在设置请求的时候触发
+                self.$message.error(error.message);
+              }
             });
           break;
         } else {
