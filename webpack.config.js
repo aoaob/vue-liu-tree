@@ -39,7 +39,7 @@ module.exports = {
                 loader: 'file-loader',
                 query: {
                     limit: 8192,
-                    name: './resourse/[folder]/[name].[ext]?[hash]'
+                    name: '/VueStyle/resourse/[folder]/[name].[ext]?[hash]'
                 }
             },
             {
@@ -50,7 +50,7 @@ module.exports = {
                 test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
                 loader: 'file-loader',
                 query: {
-                    name: ('./fonts/[name].[hash:7].[ext]')
+                    name: ('/VueStyle/fonts/[name].[hash:7].[ext]')
                 }
             }
         ],

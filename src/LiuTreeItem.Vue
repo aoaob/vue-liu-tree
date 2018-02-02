@@ -10,7 +10,6 @@
             @dragover='dragOver'
             @drop='drop'
             @dragleave='dragLeave'
-
             :class="{'dragIng':draging,'dragEnter':dragenter,'dragMove':dragmove,'ItemEdit':isEdit}">
           <div class="title" :title="tree.showName" @dblclick="gotoEdit">
               <template v-if="!isEdit">
@@ -35,6 +34,9 @@
               v-for="item,index in tree.Child" 
               :classname="classname" :tree="item"
               :select="select"
+              :is-editor="isEditor"
+              :editor-text="editorText"
+              :editoring-text="editoringText"
               :key="item.Id"
               :indexinparent="index"
               :parent="tree" >
@@ -46,7 +48,14 @@
               </li>
           </ul>
       </div>
-      <slot></slot>
+      <template v-if="isEditor">
+        <button v-if="isSelect" class="selectMe btn btn-success btn-sm">
+            {{editoringText}}
+        </button>
+        <button v-else @click="selectMe" class="selectMe btn btn-link btn-sm">
+            {{editorText}}
+        </button>
+      </template>
   </li>
 </template>
 <script>
@@ -57,6 +66,18 @@ import axios from "axios";
 export default {
   name: "LiuTreeItem",
   props: {
+    isEditor: {
+      type: Boolean,
+      default: false
+    },
+    editorText: {
+      type: String,
+      default: "Edit"
+    },
+    editoringText: {
+      type: String,
+      default: "Doing"
+    },
     classname: {
       type: String,
       default: "classname"
@@ -93,6 +114,9 @@ export default {
     };
   },
   computed: {
+    isSelect: function() {
+      return this.select == this.tree.Id;
+    },
     isDrop: function() {
       return this.tree.parentId > 0 && this.isEdit == false;
     },
@@ -133,6 +157,10 @@ export default {
         this.eventBus.$emit("executeTreePost");
       }
     },
+    selectMe: function() {
+      this.eventBus.$emit("selectMe", this.tree.Id);
+    },
+
     gotoEdit: function() {
       if (!this.isEdit) {
         this.isEdit = !this.isEdit;
@@ -178,9 +206,9 @@ export default {
       e.dataTransfer.effectAllowed = "copy";
 
       this.eventBus.$emit("setCacheModelfrom", this.tree, this.$parent.tree);
-      this.eventBus.$emit("addLog","dragStart");
+      this.eventBus.$emit("addLog", "dragStart");
       this.$message({
-         message: '开始拖动，找到可放下的位置'
+        message: "开始拖动，找到可放下的位置"
       });
     },
     drag: function(e) {
@@ -189,20 +217,20 @@ export default {
       this.dragmove = true;
       e.dataTransfer.effectAllowed = "move";
       this.eventBus.$emit("setCacheModelfrom", this.tree, this.$parent.tree);
-      this.eventBus.$emit("addLog","drag");
+      this.eventBus.$emit("addLog", "drag");
     },
     dragEnd: function(e) {
       //ondragend：源对象被拖动结束
       this.draging = false;
       this.dragmove = false;
-      this.eventBus.$emit("addLog","dragEnd");
+      this.eventBus.$emit("addLog", "dragEnd");
     },
     //目标事件
     dragEnter: function(e) {
       //ondragenter：目标对象被源对象拖动着进入
       this.dragenter = true;
       this.eventBus.$emit("setCacheModelover", this.tree);
-      this.eventBus.$emit("addLog","dragEnter");
+      this.eventBus.$emit("addLog", "dragEnter");
     },
     dragOver: function(e) {
       //ondragover：目标对象被源对象拖动着悬停在上方
@@ -216,12 +244,12 @@ export default {
       this.dragenter = false;
       this.eventBus.$emit("setCacheModelleveal", this.tree);
       this.eventBus.$emit("setCacheModelover", null);
-      this.eventBus.$emit("addLog","dragLeave");
+      this.eventBus.$emit("addLog", "dragLeave");
     },
     drop: function(e) {
       //ondrop：源对象拖动着在目标对象上方释放/松手
       this.dragenter = false;
-      this.eventBus.$emit("setCacheModelto", this.tree,this.$parent.tree);
+      this.eventBus.$emit("setCacheModelto", this.tree, this.$parent.tree);
       // this.eventBus.$emit("addLog","drop "+vm.CacheModel.from.Id+" to "+vm.CacheModel.to.Id);
       this.eventBus.$emit("move");
     }

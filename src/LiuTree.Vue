@@ -12,6 +12,9 @@
         :classname="Style"
         :tree="tree"
         :select="Select"
+        :is-editor="isEditor"
+        :editor-text="editorText"
+        :editoring-text="editoringText"
         :key="0"
         :indexinparent="0"
         :parent="{Child:[]}"
@@ -641,10 +644,25 @@ export default {
       type: Object,
       default: { Child: {} }
     },
+    isEditor: {
+      type: Boolean,
+      default: false
+    },
+    editorText: {
+      type: String,
+      default: "Edit"
+    },
+    editoringText: {
+      type: String,
+      default: "Doing"
+    },
     AxiosUrl: {
       type: Object,
       default: {
-        UpdateMin: "/"
+        UpdateMin: "/ClassManage/UpdateMin",
+        DelMin: "/ClassManage/DelMin",
+        Addmin: "/ClassManage/AddMin",
+        GetPinyin: "/Min/GetPinyin"
       }
     }
   },
@@ -681,13 +699,11 @@ export default {
     self._provided.eventBus = new Vue();
     self.eventBus = self._provided.eventBus;
 
-    self.eventBus.$on("executeTreePost", () => {
-      self.executeTreePost();
-    });
+    self.eventBus.$on("executeTreePost", () => self.executeTreePost());
 
-    self.eventBus.$on("executeTree", (tree, order) => {
-      self.executeTree(tree, order);
-    });
+    self.eventBus.$on("executeTree", (tree, order) =>
+      self.executeTree(tree, order)
+    );
 
     self.eventBus.$on("removeMe", (tree, order) => {
       self.removeMe(tree, order);
@@ -711,15 +727,56 @@ export default {
       self.CacheModel.over = over;
     });
 
-    self.eventBus.$on("move", leveal => {
-      self.move();
-    });
+    self.eventBus.$on("move", leveal => self.move());
 
-    self.eventBus.$on("addLog", log => {
-      self.log.push(log);
-    });
+    self.eventBus.$on("addLog", log => self.log.push(log));
 
-    self.eventBus.$on("addNewItem", _newItem => {
+    self.eventBus.$on("addNewItem", _newItem => self.addNewItem(_newItem));
+    self.eventBus.$on("selectMe", _Id => self.setSelect(_Id));
+  },
+  beforeDestroy: function() {
+    // Remove listeners
+    this.eventBus.$off("executeTreePost");
+    this.eventBus.$off("executeTree");
+    this.eventBus.$off("removeMe");
+    this.eventBus.$off("setCacheModelfrom");
+    this.eventBus.$off("setCacheModelto");
+    this.eventBus.$off("setCacheModelleveal");
+    this.eventBus.$off("setCacheModelover");
+    this.eventBus.$off("move");
+    this.eventBus.$off("addLog");
+    this.eventBus.$off("addNewItem");
+    this.eventBus.$off("selectMe");
+  },
+  mounted: function() {},
+  methods: {
+    treestring: function() {
+      return this.tree;
+    },
+    setSelect: function(_id) {
+      var self = this;
+      self.$emit("select", _id);
+    },
+    trueSelect: function(_id) {
+      var self = this;
+      self.Select = _id;
+      self.executeSelectNode(self.tree);
+    },
+    falseSelect: function(_id) {},
+    executeSelectNode: function(tree) {
+      var self = this;
+      if (tree.Id == self.Select) {
+        self.SelectNode = tree;
+        return;
+      }
+      if (tree.Child.length > 0) {
+        for (var i = 0; i < tree.Child.length; i++) {
+          self.executeSelectNode(tree.Child[i]);
+        }
+      }
+    },
+    addNewItem: _newItem => {
+      var self = this;
       var tree = _newItem.tree;
       if (
         _newItem.newItem == null ||
@@ -774,18 +831,6 @@ export default {
             self.$message.error(error.message);
           }
         });
-    });
-  },
-  beforeDestroy: function() {
-    // Remove listeners
-    this.eventBus.$off("executeTreePost");
-    this.eventBus.$off("executeTree");
-  },
-  mounted: function() {
-  },
-  methods: {
-    treestring: function() {
-      return this.tree;
     },
     //filter(), concat(), slice()
     executeTree: function(tree, point) {
