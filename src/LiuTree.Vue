@@ -6,6 +6,42 @@
       </span>
     </div>
     <slot></slot>
+    <div style="position:absolute;right:0;top:0;background-color:black;color:white;height:250px;overflow-y:auto;overflow-x:hidden;width:auto;" v-if="IsLoging" id="IsLoging">
+        <template v-if="CacheModel.from">
+            from:{{CacheModel.from.Id}}
+            <br />
+        </template>
+        <template v-if="CacheModel.fromParent">
+            fromParent:{{CacheModel.fromParent.Id}}
+            <br />
+        </template>
+        <template v-if="CacheModel.to">
+            to:{{CacheModel.to.Id}}
+            <br />
+        </template>
+        <template v-if="CacheModel.toParent">
+            toParent:{{CacheModel.toParent.Id}}
+            <br />
+        </template>
+        <template v-if="CacheModel.over">
+            over:{{CacheModel.over.Id}}
+            <br />
+        </template>
+        <template v-if="CacheModel.leveal">
+            leveal:{{CacheModel.leveal.Id}}
+            <br />
+        </template>
+        log:
+        <span v-for="item in log"><br />{{item}}</span>
+    </div>
+    <div style="position:absolute;right:0;top:250px;background-color:blue;color:white;" v-if="IsLoging">
+        当前{{Step.Point}}总共{{Step.StepContent.length}}
+        <div v-for="item in Step.StepContent">
+            move {{item.move}} from {{item.from}} to {{item.to}}
+        </div>
+    </div>
+
+
     <div :class="Style">
       <ul class="Node">
         <liu-tree-item
@@ -45,6 +81,7 @@
 .liutree {
   padding: 2rem;
   background-color: white;
+  position: relative;
   .NodeTree-one {
     background-color: white;
     .transition;
@@ -671,7 +708,7 @@ export default {
   },
   data() {
     return {
-      IsLoging: false,
+      IsLoging: true,
       log: [],
       CacheModel: {
         from: null,
@@ -808,7 +845,7 @@ export default {
               } else {
                 resultData.ResultModel.Child = new Array();
                 tree.Child.push(resultData.ResultModel);
-                self.executeTree(this.tree, 1);
+                self.executeTree(self.tree, 1);
                 _newItem.newItem = "";
               }
             })
