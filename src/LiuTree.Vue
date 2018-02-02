@@ -775,7 +775,7 @@ export default {
         }
       }
     },
-    addNewItem: _newItem => {
+    addNewItem: function(_newItem) {
       var self = this;
       var tree = _newItem.tree;
       if (
